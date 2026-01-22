@@ -1,12 +1,12 @@
-# Ordinals Swap
+# Caracol Swap
 
 Demonstrates trustless atomic swaps between Ordinals and Stacks. 
 
 ## Know your Contract
 
-For more details about this protocol in Stacks, please refer to [Mechanism's Ordyswap](https://github.com/mechanismHQ/ordyswap) project.
+https://github.com/Larovitchhh/CaracolSwap
 
-The [ord-swap.clar](/examples/ordyswap/contracts/ord-swap.clar) contract includes the following functionality.
+
 
 + `validate-offer-transfer` function validates the transfer of an Ordinal
 + `finalize-offer` finalizes the transfer offer
