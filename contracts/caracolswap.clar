@@ -1,6 +1,6 @@
-;;                                 OrdinalSwap                               ;;
+;;                                 CaracolSwap                               ;;
 ;;;; 
-;;              Trustless p2p atomic swaps between Ordinals and STX          ;;
+;;              Trustless p2p atomic swaps between Caracol and STX          ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 ;;
 ;; This code is provided for educational purposes and has not been audited,
@@ -15,7 +15,7 @@
 ;; DESCRIPTION
 ;; The basic flow is:
 ;;
-;; - Someone makes an offer on a specific Ordinal. They must know the seller's
+;; - Someone makes an offer on a specific caracol. They must know the seller's
 ;;   STX address ahead of time
 ;;        - This contract escrows the STX
 ;; - Ordinal owner sends the Ordinal to specified BTC address made in the offer
