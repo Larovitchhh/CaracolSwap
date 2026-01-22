@@ -1,6 +1,6 @@
 [project]
-name = "ordyswap"
-description = "Demonstrates trustless atomic swaps between Ordinals and Stacks"
+name = "caracolswap"
+description = "Demonstrates trustless atomic swaps between caracols and Stacks"
 authors = []
 telemetry = true
 cache_dir = "./.cache"
@@ -8,8 +8,8 @@ cache_dir = "./.cache"
 [[project.requirements]]
 contract_id = "SP1WN90HKT0E1FWCJT9JFPMC8YP7XGBGFNZGHRVZX.clarity-bitcoin"
 
-[contracts.ord-swap]
-path = "contracts/ord-swap.clar"
+[contracts.caracolswap]
+path = "contracts/caracolswap.clar"
 clarity_version = 4
 epoch = "latest"
 
