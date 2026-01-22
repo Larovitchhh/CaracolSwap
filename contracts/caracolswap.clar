@@ -1,13 +1,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
 ;;                               CaracolSwap                                 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-;;
-;; Swaps atómicos P2P sin confianza entre STX y Ordinals (Caracoles).
-;; Basado en el protocolo original de MechanismHQ (Ordyswap).
-;;
 
-;; --- Mapas de Almacenamiento ---
-
+;; Storage
 (define-map offers-map
   uint
   {
@@ -26,8 +21,7 @@
 
 (define-data-var last-id-var uint u0)
 
-;; --- Constantes de Error ---
-
+;; Constants
 (define-constant ERR_TX_NOT_MINED (err u100))
 (define-constant ERR_INVALID_TX (err u101))
 (define-constant ERR_INVALID_OFFER (err u102))
@@ -36,8 +30,7 @@
 (define-constant ERR_OFFER_CANCELLED (err u105))
 (define-constant ERR_NOT_AUTHORIZED (err u106))
 
-;; --- Funciones Públicas ---
-
+;; Public Functions
 (define-public (create-offer
     (txid (buff 32))
     (index uint)
@@ -46,7 +39,6 @@
     (recipient principal)
   )
   (let ((id (make-next-id)))
-    ;; Transferencia inicial de STX al contrato (Escrow)
     (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
     (map-insert offers-map id {
       txid: txid,
@@ -86,12 +78,8 @@
       (amount (get amount offer))
       (seller (get recipient offer))
     )
-    ;; Marcar como aceptada ANTES de transferir para evitar reentrada
     (asserts! (map-insert offers-accepted-map offer-id true) ERR_OFFER_ACCEPTED)
-    
-    ;; Transferencia de STX desde el contrato al vendedor (dueño del Caracol)
     (try! (as-contract (stx-transfer? amount tx-sender seller)))
-    
     (print {
       topic: "offer-finalized",
       offer: (merge offer { id: offer-id }),
@@ -104,7 +92,6 @@
 (define-public (cancel-offer (id uint))
   (let ((offer (unwrap! (map-get? offers-map id) ERR_INVALID_OFFER)))
     (asserts! (is-eq (get sender offer) tx-sender) ERR_NOT_AUTHORIZED)
-    ;; Se añade un margen de 50 bloques para evitar el front-run del vendedor
     (asserts! (map-insert offers-cancelled-map id (+ burn-block-height u50)) ERR_OFFER_CANCELLED)
     (print {
       topic: "offer-cancelled",
@@ -120,13 +107,9 @@
       (amount (get amount offer))
       (cancelled-at (unwrap! (map-get? offers-cancelled-map id) ERR_INVALID_OFFER))
     )
-    ;; Solo se puede reclamar el reembolso si han pasado los 50 bloques
     (asserts! (> burn-block-height cancelled-at) ERR_OFFER_CANCELLED)
     (asserts! (map-insert offers-refunded-map id true) ERR_INVALID_OFFER)
-    
-    ;; Devolver STX al comprador (sender original)
     (try! (as-contract (stx-transfer? amount tx-sender (get sender offer))))
-    
     (print {
       topic: "offer-refunded",
       offer: (merge offer { id: id }),
@@ -135,8 +118,7 @@
   )
 )
 
-;; --- Funciones de Lectura (Read-only) ---
-
+;; Read-only Functions
 (define-read-only (validate-offer-transfer
     (block { header: (buff 80), height: uint })
     (prev-blocks (list 10 (buff 80)))
@@ -155,15 +137,10 @@
       (input-txid (get hash input))
       (input-idx (get index input))
     )
-    ;; Validar que el Ordinal enviado coincide con la oferta
     (asserts! (is-eq input-txid (get txid offer)) ERR_OFFER_MISMATCH)
     (asserts! (is-eq input-idx (get index offer)) ERR_OFFER_MISMATCH)
-    ;; Validar que se envió al scriptPubKey (dirección BTC) correcta
     (asserts! (is-eq (get scriptPubKey output) (get output offer)) ERR_OFFER_MISMATCH)
-    ;; Validar que no ha sido aceptada ya
     (asserts! (is-none (map-get? offers-accepted-map offer-id)) ERR_OFFER_ACCEPTED)
-    
-    ;; Validar estado de cancelación
     (match (map-get? offers-cancelled-map offer-id)
       cancelled-at (if (< burn-block-height cancelled-at)
         (ok offer)
@@ -180,8 +157,7 @@
 (define-read-only (get-offer-refunded (id uint)) (map-get? offers-refunded-map id))
 (define-read-only (get-last-id) (var-get last-id-var))
 
-;; --- Funciones Privadas ---
-
+;; Private Functions
 (define-private (make-next-id)
   (let ((last-id (var-get last-id-var)))
     (var-set last-id-var (+ last-id u1))
